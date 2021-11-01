@@ -4,6 +4,8 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 oo2core_8_win64.dll
+oo2core_9_win64.dll
+oo2net_9_win64.dll
 Test/
 *.zip
 
