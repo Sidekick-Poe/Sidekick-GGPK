@@ -11,10 +11,11 @@ using System.Text;
 
 namespace LibBundle3 {
 	public unsafe class Index : IDisposable {
-		protected readonly Bundle bundle;
 		public readonly BundleRecord[] Bundles;
 		public readonly Dictionary<ulong, FileRecord> Files;
 		public readonly DirectoryRecord[] Directories;
+
+		protected readonly Bundle bundle;
 		protected readonly byte[] directoryBundleData;
 		protected int UncompressedSize; // For memory alloc when saving
 
@@ -41,6 +42,8 @@ namespace LibBundle3 {
 				return _Root;
 			}
 		}
+
+		public Func<BundleRecord, Bundle> FuncReadBundle = static (br) => new(br.Path);
 
 		public Index(string filePath) : this(File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read), false) { }
 
@@ -206,19 +209,7 @@ namespace LibBundle3 {
 
 		public virtual void Replace(Node node, string pathToLoad, bool dontChangeBundle = false) {
 			if (node is FileNode fn) {
-				var fr = fn.Record;
-				var b = fr.BundleRecord.Bundle.ReadData();
-				var f = File.OpenRead(pathToLoad);
-				if (fr.Offset + fr.Size >= fr.BundleRecord.ValidSize)
-					fr.BundleRecord.ValidSize = fr.Offset;
-				var b2 = new byte[fr.BundleRecord.ValidSize + f.Length];
-				Unsafe.CopyBlockUnaligned(ref b2[0], ref b[0], (uint)fr.BundleRecord.ValidSize);
-				for (var l = 0; l < f.Length;)
-					l += f.Read(b2, fr.BundleRecord.ValidSize + l, (int)f.Length - l);
-				fr.BundleRecord.Bundle.SaveData(b2);
-				fr.Offset = b.Length;
-				fr.Size = b2.Length;
-				f.Close();
+				fn.Record.Write(File.ReadAllBytes(pathToLoad));
 				return;
 			}
 			if (dontChangeBundle) {
