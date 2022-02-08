@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
-using System.Collections.Generic;
+using System.Text;
 using static LibGGPK2.Records.IFileRecord;
 
 namespace LibGGPK2.Records
@@ -72,7 +72,7 @@ namespace LibGGPK2.Records
             stream ??= ggpkContainer.fileStream;
             stream.Seek(DataBegin, SeekOrigin.Begin);
             for (var l = 0;  l < DataLength;)
-                stream.Read(buffer, l, DataLength - l);
+                l += stream.Read(buffer, l, DataLength - l);
             return buffer;
         }
 

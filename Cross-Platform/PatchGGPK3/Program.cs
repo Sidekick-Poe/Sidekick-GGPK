@@ -1,14 +1,22 @@
-﻿using System;
+﻿using LibGGPK3;
+using LibGGPK3.Records;
+using System;
 using System.IO;
 using System.IO.Compression;
-using LibGGPK3;
-using LibGGPK3.Records;
 
 namespace PatchGGPK3 {
 	public class Program {
 		public static void Main(string[] args) {
-			Console.WriteLine("PatchGGPK3  Copyright (C) 2021 aianlinb."); // ©
-			if (args.Length != 2) {
+			Console.TreatControlCAsInput = true;
+			Console.WriteLine("PatchGGPK3  Copyright (C) 2021-2022 aianlinb."); // ©
+			Console.WriteLine();
+			if (args.Length == 0) {
+				args = new string[2];
+				Console.Write("Path To GGPK: ");
+				args[0] = Console.ReadLine()!;
+				Console.Write("Path To Zip File: ");
+				args[1] = Console.ReadLine()!;
+			} else if (args.Length != 2) {
 				Console.WriteLine("Usage: PatchGGPK3 <PathToGGPK> <ZipFile>");
 				return;
 			}
@@ -31,8 +39,10 @@ namespace PatchGGPK3 {
 			int successed = 0, failed = 0;
 			Console.WriteLine();
 			foreach (var e in zip.Entries) {
-				if (e.FullName.EndsWith('/'))
+				if (e.FullName.EndsWith('/')) {
 					continue;
+				}
+
 				Console.Write("Replacing " + e.FullName + " . . . ");
 				if (ggpk.FindNode(e.FullName) is not FileRecord fr) {
 					++failed;
@@ -42,8 +52,10 @@ namespace PatchGGPK3 {
 				}
 				var fs = e.Open();
 				var b = new byte[e.Length];
-				for (var l = 0; l < b.Length;)
-					fs.Read(b, l, b.Length - l);
+				for (var l = 0; l < b.Length;) {
+					l += fs.Read(b, l, b.Length - l);
+				}
+
 				fs.Close();
 				fr.ReplaceContent(b);
 				++successed;

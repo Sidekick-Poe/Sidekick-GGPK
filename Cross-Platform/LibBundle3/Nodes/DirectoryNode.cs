@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace LibBundle3 {
+namespace LibBundle3.Nodes {
 	public class DirectoryNode : Node {
 		public DirectoryNode(string name) : base(name) {
 		}
 
 		public SortedSet<Node> Children = new(NodeComparer.Instance);
+
+		public override string GetPath() => base.GetPath() + "/";
 
 		protected sealed class NodeComparer : IComparer<Node> {
 			public static readonly IComparer<Node> Instance = OperatingSystem.IsWindows() ? new NodeComparer_Windows() : new NodeComparer();

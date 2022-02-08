@@ -8,9 +8,17 @@ namespace LibBundle3.Records {
 		public int Offset;
 		public int Size;
 
+		protected internal string _Path;
+		public string Path {
+			get => _Path;
+			set {
+				_Path = value;
+				PathHash = Index.FNV1a64Hash(value);
+			}
+		}
+
 		public BundleRecord BundleRecord;
 		public DirectoryRecord DirectoryRecord;
-		public string Path;
 
 #pragma warning disable CS8618
 		public FileRecord(ulong pathHash, int bundleIndex, int offset, int size) {
@@ -20,25 +28,27 @@ namespace LibBundle3.Records {
 			Size = size;
 		}
 
-		public virtual Span<byte> Read() {
+		public virtual Memory<byte> Read() {
 			return BundleRecord.Bundle.ReadData(Offset, Size);
 		}
 
+		/// <summary>
+		/// Replace the content of the file and save the Index
+		/// </summary>
+		/// <param name="newContent"></param>
 		public virtual void Write(ReadOnlySpan<byte> newContent) {
 			var b = BundleRecord.Bundle.ReadData();
-			Offset = BundleRecord.ValidSize;
+			Offset = b.Length;
 			Size = newContent.Length;
-			BundleRecord.ValidSize += Size;
-			var b2 = new byte[BundleRecord.ValidSize];
-			Unsafe.CopyBlockUnaligned(ref b2[0], ref b[0], (uint)Offset);
-			newContent.CopyTo(b2.AsSpan()[Offset..Size]);
+			var b2 = new byte[b.Length + Size];
+			Unsafe.CopyBlockUnaligned(ref b2[0], ref b[0], (uint)b.Length);
+			newContent.CopyTo(b2.AsSpan().Slice(Offset, Size));
 			BundleRecord.Bundle.SaveData(b2);
+			BundleRecord.UncompressedSize = BundleRecord.Bundle.UncompressedSize;
 			BundleRecord.Index.Save();
 		}
 
 		public virtual void Redirect(BundleRecord bundle, int offset, int size) {
-			if (Offset + Size >= BundleRecord.ValidSize)
-				BundleRecord.ValidSize = Offset;
 			BundleRecord = bundle;
 			BundleIndex = bundle.BundleIndex;
 			Offset = offset;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LibDat2.Types;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -9,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
-using LibDat2.Types;
 
 namespace LibDat2 {
 	public class DatContainer {
@@ -103,6 +103,7 @@ namespace LibDat2 {
 		/// Parses the dat file contents from a binary data
 		/// </summary>
 		/// <param name="fileData">Binary data of a dat file</param>
+		/// <param name="fileName">Name of the dat file with extension</param>
 		/// <param name="SchemaMin">Whether to use schema.min.json</param>
 		public DatContainer(byte[] fileData, string fileName, bool SchemaMin = false) : this(new MemoryStream(fileData), fileName, SchemaMin) { }
 
@@ -483,36 +484,8 @@ namespace LibDat2 {
 		protected static long CalculateRecordLength(IEnumerable<string> fields, bool x64) {
 			long result = 0;
 			foreach (var type in fields)
-				result += FieldTypeLength(type, x64);
+				result += IFieldData.SizeOfType(type, x64);
 			return result;
-		}
-
-		/// <summary>
-		/// Get the length in dat file of a type of field
-		/// </summary>
-		public static int FieldTypeLength(string type, bool x64) {
-			if (type.StartsWith("array|"))
-				return x64 ? 16 : 8;
-			else
-				return type switch {
-					"foreignrow" => x64 ? 16 : 8,
-					"row" => x64 ? 8 : 4,
-					"string" => x64 ? 8 : 4,
-					"bool" => 1,
-					"i8" => 1,
-					"u8" => 1,
-					"i16" => 2,
-					"u16" => 2,
-					"i32" => 4,
-					"u32" => 4,
-					"f32" => 4,
-					"i64" => 8,
-					"u64" => 8,
-					"f64" => 8,
-					"valueString" => 0,
-					"array" => 0,
-					_ => throw new InvalidCastException($"Unknown Type: {type}")
-				};
 		}
 
 		/// <summary>
@@ -521,7 +494,7 @@ namespace LibDat2 {
 		/// </summary>
 		public static void ReloadDefinitions(string filePath = "DatDefinitions.json") {
 			var bp = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
-			if (bp is not null)
+			if (bp != null)
 				filePath = Path.GetFullPath(filePath, bp);
 			var json = JsonDocument.Parse(File.ReadAllBytes(filePath), new() { CommentHandling = JsonCommentHandling.Skip });
 			try {

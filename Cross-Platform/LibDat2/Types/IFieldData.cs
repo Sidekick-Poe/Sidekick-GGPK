@@ -101,7 +101,37 @@ namespace LibDat2.Types {
 		public string StringValue { get; set; }
 
 		/// <summary>
-		/// Convert type string from DatDefinitions to <see cref="FieldType"/> enum
+		/// Get the length in dat file of a type of field
+		/// </summary>
+		public static int SizeOfType(string type, bool x64) {
+			if (type.StartsWith("array|"))
+				return x64 ? 16 : 8;
+			else
+				return type switch {
+					"foreignrow" => x64 ? 16 : 8,
+					"row" => x64 ? 8 : 4,
+					"string" => x64 ? 8 : 4,
+					"bool" => 1,
+					"i8" => 1,
+					"u8" => 1,
+					"i16" => 2,
+					"u16" => 2,
+					"i32" => 4,
+					"enumrow" => 4,
+					"u32" => 4,
+					"f32" => 4,
+					"i64" => 8,
+					"u64" => 8,
+					"f64" => 8,
+					"valuestring" => 0,
+					"valueString" => 0, // forward support
+					"array" => 0,
+					_ => throw new InvalidCastException($"Unknown Type: {type}")
+				};
+		}
+
+		/// <summary>
+		/// Get the length in dat file of a type of field
 		/// </summary>
 		public static int SizeOfType(FieldType type, bool x64) {
 			return type switch {
@@ -134,6 +164,7 @@ namespace LibDat2.Types {
 			{ "i8", FieldType.Int8  },
 			{ "i16", FieldType.Int16 },
 			{ "i32", FieldType.Int32 },
+			{ "enumrow", FieldType.Int32 },
 			{ "i64", FieldType.Int64 },
 			{ "u8", FieldType.UInt8  },
 			{ "u16", FieldType.UInt16 },
@@ -145,7 +176,8 @@ namespace LibDat2.Types {
 			{ "foreignrow", FieldType.ForeignRow },
 			{ "array", FieldType.Unknown },
 			{ "string", FieldType.String },
-			{ "valueString", FieldType.ValueString }
+			{ "valuestring", FieldType.ValueString },
+			{ "valueString", FieldType.ValueString } // forward support
 		});
 
 		/// <summary>

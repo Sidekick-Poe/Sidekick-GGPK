@@ -75,7 +75,7 @@ namespace VisualGGPK2
             if (SteamMode)
                 Title += " (SteamMode)";
             if (BundleMode)
-                Title += " (SteamMode)";
+                Title += " (BundleMode)";
             // Version Check
             try {
                 var http = new HttpClient {
@@ -336,9 +336,9 @@ namespace VisualGGPK2
         public static unsafe BitmapSource DdsToPng(MemoryStream buffer) {
             Pfim.IImage image;
             var tag = stackalloc byte[4];
-            buffer.Read(new Span<byte>(tag, 4));
+            buffer.Read(new(tag, 4));
             bool dispose;
-            if (dispose = * (int*)tag != 0x20534444) // "DDS "
+            if (dispose = *(int*)tag != 0x20534444) // "DDS "
                 buffer = new MemoryStream(BrotliSharpLib.Brotli.DecompressBuffer(buffer.ToArray(), 4, (int)buffer.Length - 4));
             buffer.Seek(0, SeekOrigin.Begin);
             image = Pfim.Pfim.FromStream(buffer);
@@ -415,7 +415,7 @@ namespace VisualGGPK2
                             bkg.Close();
                         });
                     } catch (Exception ex) {
-                        App.HandledException(ex);
+                        App.HandleException(ex);
                         Dispatcher.Invoke(bkg.Close);
                     }
                 });
@@ -439,7 +439,7 @@ namespace VisualGGPK2
                             bkg.Close();
                         });
                     } catch (Exception ex) {
-                        App.HandledException(ex);
+                        App.HandleException(ex);
                         Dispatcher.Invoke(bkg.Close);
                     }
             });
@@ -484,7 +484,7 @@ namespace VisualGGPK2
                                     bkg.Close();
                                 });
                             } catch (Exception ex) {
-                                App.HandledException(ex);
+                                App.HandleException(ex);
                                 Dispatcher.Invoke(bkg.Close);
                             }
                         });
@@ -524,7 +524,7 @@ namespace VisualGGPK2
                                     bkg.Close();
                                 });
                             } catch (Exception ex) {
-                                App.HandledException(ex);
+                                App.HandleException(ex);
                                 Dispatcher.Invoke(bkg.Close);
                             }
                         });
@@ -638,7 +638,7 @@ namespace VisualGGPK2
                         OnTreeSelectedChanged(null, null);
                     });
                 } catch (Exception ex) {
-                    App.HandledException(ex);
+                    App.HandleException(ex);
                     Dispatcher.Invoke(bkg.Close);
                 }
             });
@@ -679,7 +679,7 @@ namespace VisualGGPK2
                                 bkg.Close();
                             });
                         } catch (Exception ex) {
-                            App.HandledException(ex);
+                            App.HandleException(ex);
                             Dispatcher.Invoke(bkg.Close);
                         }
                     });
