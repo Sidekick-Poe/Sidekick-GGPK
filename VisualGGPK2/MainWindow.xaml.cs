@@ -34,11 +34,11 @@ namespace VisualGGPK2
         /// <summary>
         /// Icon of directory on TreeView
         /// </summary>
-        public static readonly BitmapFrame IconDir = BitmapFrame.Create(new MemoryStream((byte[])Properties.Resources.ResourceManager.GetObject("dir", CultureInfo.InvariantCulture)));
+        public static readonly BitmapFrame IconDir = BitmapFrame.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("VisualGGPK2.Resources.dir.ico"));
         /// <summary>
         /// Icon of file on TreeView
         /// </summary>
-        public static readonly BitmapFrame IconFile = BitmapFrame.Create(new MemoryStream((byte[])Properties.Resources.ResourceManager.GetObject("file", CultureInfo.InvariantCulture)));
+        public static readonly BitmapFrame IconFile = BitmapFrame.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("VisualGGPK2.Resources.file.ico"));
         public static readonly ContextMenu TreeMenu = new();
         public static readonly Encoding Unicode = new UnicodeEncoding(false, true);
         public static readonly Encoding UTF8 = new UTF8Encoding(false, false);
@@ -325,11 +325,12 @@ namespace VisualGGPK2
 		/// Get the PixelFormat of the dds image
 		/// </summary>
 		public static PixelFormat PixelFormat(Pfim.IImage image) => image.Format switch {
-            Pfim.ImageFormat.Rgb24 => PixelFormats.Bgr24,
             Pfim.ImageFormat.Rgba32 => PixelFormats.Bgra32,
-            Pfim.ImageFormat.Rgb8 => PixelFormats.Gray8,
-            Pfim.ImageFormat.R5g5b5a1 or Pfim.ImageFormat.R5g5b5 => PixelFormats.Bgr555,
+            Pfim.ImageFormat.Rgb24 => PixelFormats.Bgr24,
             Pfim.ImageFormat.R5g6b5 => PixelFormats.Bgr565,
+            Pfim.ImageFormat.R5g5b5a1 or Pfim.ImageFormat.R5g5b5 => PixelFormats.Bgr555,
+            Pfim.ImageFormat.Rgb8 => PixelFormats.Gray8,
+            Pfim.ImageFormat.Rgba16 => PixelFormats.Gray16,
             _ => throw new Exception($"Unable to convert {image.Format} to WPF PixelFormat"),
         };
 
@@ -658,7 +659,7 @@ namespace VisualGGPK2
         private void OnSavePngClicked(object sender, RoutedEventArgs e) {
             var o = (Tree.SelectedItem as TreeViewItem)?.Tag;
             if (o is RecordTreeNode rtn && rtn is not IFileRecord) {
-                var sfd = new SaveFileDialog { FileName = rtn.Name + ".dir", Filter= "*.png|*.png" };
+                var sfd = new SaveFileDialog { FileName = rtn.Name + ".dir", Filter= "*.*|*.*" };
                 if (sfd.ShowDialog() == true) {
                     var bkg = new BackgroundDialog();
                     Task.Run(() => {
